@@ -285,7 +285,7 @@ export default function AuthPage() {
           <div className="space-y-4 border-l-2 border-white/20 pl-6">
             <div className="group flex items-center gap-3 transition-all hover:translate-x-2">
               <div className="h-2 w-2 rounded-full bg-emerald-400"></div>
-              <span className="text-xl font-medium">Mehdi Mansouri</span>
+              <span className="text-xl font-medium">Saoshyant Mansouri</span>
             </div>
             <div className="group flex items-center gap-3 transition-all hover:translate-x-2">
               <div className="h-2 w-2 rounded-full bg-blue-300"></div>
