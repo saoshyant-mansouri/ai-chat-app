@@ -1,0 +1,46 @@
+name: IndexNow
+
+# Runs when Vercel (through its GitHub integration) reports a deployment status.
+# No secrets needed: the IndexNow key is public by design (served at /<key>.txt).
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: true
+
+jobs:
+  submit:
+    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: https://aihealth.mhdmansouri.com
+      INDEXNOW_KEY: cc0b74fc018f6231173cfd52ad17be78
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+          fetch-depth: 2
+
+      # Submit only when something visitors see changed.
+      - name: Detect site changes
+        id: changes
+        run: |
+          if git rev-parse --verify -q HEAD~1 >/dev/null && git diff --quiet HEAD~1 HEAD -- src app public components next.config.* package.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No site files changed in this deploy; skipping IndexNow."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.changes.outputs.changed == 'true'
+        with:
+          node-version: 22
+
+      - name: Submit to IndexNow
+        if: steps.changes.outputs.changed == 'true'
+        run: node scripts/indexnow.mjs
